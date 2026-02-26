@@ -1,0 +1,8 @@
+# Core (no external dependencies needed for static analysis)
+# The Dockerfile parser uses only Python standard library.
+
+# Optional: Docker SDK for dynamic container auditing
+docker>=7.0.0
+
+# Optional: For running tests
+pytest>=7.0.0

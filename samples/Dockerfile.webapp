@@ -1,0 +1,67 @@
+# ============================================================
+# DELIBERATELY VULNERABLE DOCKERFILE — FOR TESTING ONLY
+# Simulates a realistic Flask web app with common mistakes
+# that developers make when containerizing applications.
+#
+# DO NOT deploy this in production.
+# ============================================================
+
+# VULN: Using :latest tag — builds are not reproducible
+FROM python:latest
+
+# VULN: Hardcoded AWS credentials (a developer "just testing locally")
+ENV AWS_ACCESS_KEY_ID=AKIAEXAMPLEEXAMPLE00
+ENV AWS_SECRET_ACCESS_KEY=EXAMPLE0SECRET0KEY0VALUE0ONLY0FOR0TESTING00
+ENV AWS_DEFAULT_REGION=us-east-1
+
+# VULN: Database password baked into the image
+ENV DATABASE_URL=postgres://admin:EXAMPLEPASSWORD@db.internal:5432/production
+ENV DB_PASSWORD=EXAMPLEPASSWORD123
+ENV REDIS_PASSWORD=EXAMPLEREDISPASS789
+
+# VULN: API tokens hardcoded
+ENV GITHUB_TOKEN=ghp_EXAMPLETOKEN000000000000000000000000
+ENV STRIPE_SECRET_KEY=sk_test_FAKE0EXAMPLE0KEY0000000000
+ENV JWT_SECRET=mySuperSecretJWTSigningKey2026ForAuth
+
+# VULN: Installing unnecessary development tools in production
+RUN apt-get update && apt-get install -y \
+    vim \
+    nano \
+    curl \
+    wget \
+    net-tools \
+    nmap \
+    telnet \
+    ssh \
+    gcc \
+    make \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# VULN: Installing sudo inside container
+RUN apt-get update && apt-get install -y sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# VULN: Using ADD instead of COPY for local files
+ADD ./requirements.txt /app/requirements.txt
+ADD ./src /app/src
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# VULN: Exposing dangerous ports alongside app port
+EXPOSE 22
+EXPOSE 5000
+EXPOSE 3306
+EXPOSE 5432
+EXPOSE 6379
+EXPOSE 27017
+EXPOSE 9200
+
+# VULN: No HEALTHCHECK defined
+# VULN: No USER directive — runs as root!
+# VULN: Using shell form instead of exec form
+
+CMD python src/app.py

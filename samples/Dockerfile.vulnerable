@@ -1,0 +1,50 @@
+# ============================================================
+# DELIBERATELY VULNERABLE DOCKERFILE — FOR TESTING ONLY
+# This file contains intentional security anti-patterns.
+# DO NOT use this in production.
+# ============================================================
+
+# DS003: Using :latest tag (unpinned base image)
+FROM ubuntu:latest
+
+# DS006: Using ADD instead of COPY for local files
+ADD ./app /app
+
+# DS002: Hardcoded AWS credentials
+ENV AWS_ACCESS_KEY_ID=AKIAEXAMPLEEXAMPLE00
+ENV AWS_SECRET_ACCESS_KEY=EXAMPLE0SECRET0KEY0VALUE0ONLY0FOR0TESTING00
+
+# DS002: Hardcoded database password
+ENV DB_PASSWORD=SuperSecret123!
+ENV API_TOKEN=ghp_EXAMPLETOKEN000000000000000000000000
+
+# DS005: Installing unnecessary tools in production
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    wget \
+    vim \
+    net-tools \
+    ssh \
+    telnet \
+    gcc \
+    make
+
+# DS007: Installing and using sudo
+RUN apt-get install -y sudo
+
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+# DS004: Exposing dangerous ports
+EXPOSE 22
+EXPOSE 80
+EXPOSE 3306
+EXPOSE 5432
+EXPOSE 8080
+
+# DS006: No HEALTHCHECK defined
+# DS001: No USER directive — container runs as root!
+
+CMD ["python", "app.py"]
